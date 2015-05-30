@@ -5,6 +5,7 @@ public class MaxPQ<Key extends Comparable<Key>> {
     private Key[] pq;
     private int N;
 
+	//indexing from 1, so you need add 1 to capacity when initial the array
     public MaxPQ(int capacity) {
         pq = (Key[]) new Comparable[capacity+1];
     }
@@ -50,11 +51,11 @@ public class MaxPQ<Key extends Comparable<Key>> {
             k = j;
         }
     }
-
+	//indexing from 1
     private boolean less(int i, int j) {
         return pq[i].compareTo(pq[j]) < 0;
     }
-
+	//indexing from 1
     private void exch(int i, int j) {
         Key t = pq[i];
         pq[i] = pq[j];
