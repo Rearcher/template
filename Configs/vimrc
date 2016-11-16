@@ -45,6 +45,8 @@ set nocompatible
 " shortcuts
 map <F5> :call Compile()<CR>
 map <F6> :call Debug() <CR>
+map <F2> :call ToHex() <CR>
+map <F3> :call RecoverFromHex() <CR>
 
 func! Compile()
 	if &filetype == "cpp"
@@ -72,4 +74,12 @@ func! Debug()
 		exec "!gcc -g -Wall % -o %<"
 		exec "! ./%<"
 	endif
+endfunc
+
+func! ToHex()
+	exec "%!xxd"
+endfunc
+
+func! RecoverFromHex()
+	exec "%!xxd -r"
 endfunc
