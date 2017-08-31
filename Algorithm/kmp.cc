@@ -16,7 +16,7 @@ int kmp(string str, string pattern) {
 
     // set up next
     int k = -1, j = 0, i = 0;
-    while (j < pattern.size()) {
+    while (j < pattern.size() - 1) {
         if (k == -1 || pattern[k] == pattern[j]) {
             k += 1;
             j += 1;
