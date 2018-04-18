@@ -27,7 +27,7 @@ class LogisticRegression:
         grad = (1 / n_samples) * X.T.dot(h - y)
         return J, grad
 
-    def fit(self, X, y, n_iterations=1000):
+    def fit(self, X, y, n_iterations=1000, learning_rate=0.01):
         """训练模型
         Args:
             X: 训练数据
@@ -38,7 +38,7 @@ class LogisticRegression:
         self.theta = np.zeros([n_features, 1])
         for i in range(n_iterations):
             J, grad = self.costFunction(X, y)
-            self.theta -= grad
+            self.theta -= learning_rate * grad
 
     def predict(self, X):
         """用模型进行预测"""
