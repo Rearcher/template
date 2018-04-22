@@ -123,7 +123,7 @@ class KNN:
 
 
 def main():
-    # 加载数据集，切分训练集和测试集合
+    # 加载数据集，切分训练集和测试集
     digits = datasets.load_digits()
     X = digits.data
     y = digits.target
