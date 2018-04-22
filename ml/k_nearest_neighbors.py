@@ -17,7 +17,7 @@ def run_time(func):
     def wrapper(*args, **kw):
         begin_time = time.time()
         res = func(*args, **kw)
-        print(f'{func.__name__} run time is {time.time() - begin_time:.2f}s\n')
+        print(f'{func.__name__} run time is {time.time() - begin_time:.2f}s')
         return res
     return wrapper
 
@@ -108,14 +108,14 @@ class KNN:
             self.split_order = random.sample(range(1, n_features), n_features - 1)
             root = self._build_kd_tree(data, 0)
             for i, sample in enumerate(X_test):
-                print(f'processing sample {i + 1} / {len(X_test)}')
+                # print(f'processing sample {i + 1} / {len(X_test)}')
                 self.neighbors.clear()
                 self._search_tree(root, sample)
                 neighbors = np.array([x[0] for d, c, x in self.neighbors])
                 pred[i] = self._vote(neighbors)
         else:
             for i, sample in enumerate(X_test):
-                print(f'processing sample {i + 1} / {len(X_test)}')
+                # print(f'processing sample {i + 1} / {len(X_test)}')
                 idx = np.argsort([euclidean_distance(x, sample) for x in X_train])[:self.k]
                 neighbors = np.array([y_train[j] for j in idx])
                 pred[i] = self._vote(neighbors)
@@ -130,7 +130,13 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=19)
 
     model = KNN(k=3)
-    pred = model.predict(X_train, y_train, X_test, kd_tree=True)
+
+    print('brute force search: ')
+    pred = model.predict(X_train, y_train, X_test, kd_tree=False)
+    print(f'accuracy = {accuracy_score(y_test, pred):.6f}\n')
+
+    print('kd-tree search: ')
+    pred = model.predict(X_train, y_train, X_test, kd_tree=False)
     print(f'accuracy = {accuracy_score(y_test, pred):.6f}')
 
 
