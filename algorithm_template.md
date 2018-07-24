@@ -158,7 +158,7 @@ void add(int i, int x) {
 }
 ```
 
-通过使用两个树状数组来达到**O(logn)的区间更新复杂度**：
+通过使用两个树状数组来达到**O(logn)的区间更新复杂度**：
 ```cpp
 const int MAX_N = 100001;
 int bit0[MAX_N], bit1[MAX_N];
