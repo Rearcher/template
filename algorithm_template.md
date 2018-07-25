@@ -192,3 +192,24 @@ int rangeUpdate(int from, int to, int x) {
     add(bit1, to + 1, -x);
 }
 ```
+二维树状数组：
+
+```cpp
+const int MAX_N = 100001;
+int bit[MAX_N][MAX_N];
+
+int sum(int x, int y) {
+    int res = 0;
+    for (int i = x; i > 0; i -= i & (-i))
+        for (int j = y; j > 0; j -= j & (-j))
+            res += bit[i][j];
+   	return res;
+}
+
+void add(int x, int y, int val) {
+    for (int i = x; i <= MAX_N; i += i & (-i))
+        for (int j = y; j <= MAX_N; j += j & (-j))
+            bit[i][j] += val;
+}
+```
+
