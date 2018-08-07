@@ -1,3 +1,18 @@
+
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+
+<!-- code_chunk_output -->
+
+* [常用算法模板](#常用算法模板)
+	* [数据结构](#数据结构)
+		* [堆](#堆)
+		* [二叉树的遍历（非递归）](#二叉树的遍历非递归)
+		* [树状数组](#树状数组)
+		* [线段树](#线段树)
+
+<!-- /code_chunk_output -->
+
+
 # 常用算法模板
 
 ## 数据结构
@@ -185,7 +200,7 @@ int sum(int i) {
 }
 
 // 区间更新，[from, to]的元素都加上x，时间复杂度logn
-int rangeUpdate(int from, int to, int x) {
+void rangeUpdate(int from, int to, int x) {
     add(bit0, from, -x * (from - 1));
     add(bit1, from, x);
     add(bit0, to + 1, x * to);
@@ -213,3 +228,101 @@ void add(int x, int y, int val) {
 }
 ```
 
+### 线段树
+
+用于单点更新、区间更新、区间求和、区间最值。下面的模板基于区间求和。
+
+**注意点：**
+1. 线段树的空间大小应是原始数组的**4倍**
+2. 如果线段树的下标从0开始，那么某一节点idx的左儿子和右儿子分别是`idx * 2 + 1`和`idx * 2 + 2`
+3. 如果线段树的下标从1开始，那么某一节点idx的左儿子和右儿子分别是`idx * 2`和`idx * 2 + 1`
+
+```cpp
+#define lson idx * 2
+#define rson idx * 2 + 1
+
+const int MAX_N = 100010;
+int tree[MAX_N * 4], lazy[MAX_N * 4];
+int a[MAX_N];
+
+// 节点数据向上更新
+void push_up(int idx) {
+    tree[idx] = tree[lson] + tree[rson];
+}
+
+// lazy标记向下推
+// len为tree[idx]对应的区间长度
+void push_down(int idx, int len) {
+    tree[lson] += lazy[idx] * (len - (len >> 1));
+    lazy[lson] += lazy[idx];
+
+    tree[rson] += lazy[idx] * (len >> 1);
+    lazy[rson] += lazy[idx];
+
+    lazy[idx] = 0;
+}
+
+/* 如果是求区间最值，则这样写 
+void push_down(int idx, int len) {
+    tree[lson] += lazy[idx];
+    lazy[lson] += lazy[idx];
+
+    tree[rson] += lazy[idx];
+    lazy[rson] += lazy[idx];
+
+    lazy[idx] = 0;
+} */
+
+void build(int idx, int s, int e) {
+    if (s > e) return;
+    if (s == e) {
+        tree[idx] = a[s];
+        return;
+    }
+
+    int m = (s + e) / 2;
+    build(lson, s, m);
+    build(rson, m + 1, e);
+    push_up(idx);
+}
+
+// 单点更新
+void update(int idx, int s, int e, int q, int val) {
+    if (s == e) {
+        tree[idx] += val;
+        return;
+    }
+
+    int m = (s + e) / 2;
+    if (q <= m) update(lson, s, m, q, val);
+    else update(rson, m + 1, e, q, val);
+    push_up(idx);
+}
+
+// 区间更新
+void update(int idx, int s, int e, int qs, int qe, int val) {
+    if (qs <= s && e <= qe) {
+        tree[idx] += val * (e - s + 1);
+        lazy[idx] += val;
+        return;
+    }
+
+    if (lazy[idx]) push_down(idx, e - s + 1);
+
+    int m = (s + e) / 2;
+    if (qs <= m) update(lson, s, m, qs, qe, val);
+    if (qe > m) update(rson, m + 1, e, qs, qe, val);
+    push_up(idx);
+}
+
+// 区间查询
+int query(int idx, int s, int e, int qs, int qe) {
+    if (qs <= s && e <= qe) return tree[idx];
+    if (lazy[idx]) push_down(idx, e - s + 1);
+
+    int m = (s + e) / 2, res = 0;
+    if (qs <= m) res += query(lson, s, m, qs, qe);
+    if (qe > m) res += query(rson, m + 1, e, qs, qe);
+    return res;
+}
+```
