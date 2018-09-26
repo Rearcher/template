@@ -7,6 +7,7 @@
 	* [动态规划](#动态规划)
 		* [背包问题](#背包问题)
 	* [数据结构](#数据结构)
+		* [并查集](#并查集)
 		* [堆](#堆)
 		* [二叉树的遍历（非递归）](#二叉树的遍历非递归)
 		* [树状数组](#树状数组)
@@ -73,6 +74,38 @@ for (int i = 0; i < n; ++i) {
 -----
 
 ## 数据结构
+
+### 并查集
+```cpp
+int p[100], rank[100];
+
+void init() {
+    for (int i = 0; i < 100; ++i) {
+        p[i] = i;
+        rank[i] = 1;
+    }
+}
+
+int find(int x) {
+    while (p[x] != x) {
+        p[x] = p[p[x]];
+        x = p[x];
+    }
+    return x;
+}
+
+void unite(int x, int y) {
+    int rx = find(x), ry = find(y);
+    if (rx == ry) return;
+    if (rx < ry) {
+        p[rx] = ry;
+        rank[ry] += rank[rx];
+    } else {
+        p[ry] = rx;
+        rank[rx] += rank[ry];
+    }
+}
+```
 
 ### 堆
 **注意：自底向上建堆的时间复杂度是O(n)**
