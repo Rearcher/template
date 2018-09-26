@@ -97,7 +97,7 @@ int find(int x) {
 void unite(int x, int y) {
     int rx = find(x), ry = find(y);
     if (rx == ry) return;
-    if (rx < ry) {
+    if (rank[rx] < rank[ry]) {
         p[rx] = ry;
         rank[ry] += rank[rx];
     } else {
