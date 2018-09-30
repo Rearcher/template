@@ -77,12 +77,13 @@ for (int i = 0; i < n; ++i) {
 
 ### 并查集
 ```cpp
-int p[100], rank[100];
+const int MAX_N = 105;
+int p[MAX_N], sz[MAX_N];
 
-void init() {
-    for (int i = 0; i < 100; ++i) {
+void init(int n) {
+    for (int i = 0; i <= n; ++i) {
         p[i] = i;
-        rank[i] = 1;
+        sz[i] = 1;
     }
 }
 
@@ -97,12 +98,12 @@ int find(int x) {
 void unite(int x, int y) {
     int rx = find(x), ry = find(y);
     if (rx == ry) return;
-    if (rank[rx] < rank[ry]) {
+    if (sz[rx] < sz[ry]) {
         p[rx] = ry;
-        rank[ry] += rank[rx];
+        sz[ry] += sz[rx];
     } else {
         p[ry] = rx;
-        rank[rx] += rank[ry];
+        sz[rx] += sz[ry];
     }
 }
 ```
