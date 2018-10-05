@@ -4,6 +4,10 @@
 <!-- code_chunk_output -->
 
 * [常用算法模板](#常用算法模板)
+	* [图论](#图论)
+		* [二分图](#二分图)
+		* [最短路径](#最短路径)
+		* [最小生成树](#最小生成树)
 	* [动态规划](#动态规划)
 		* [背包问题](#背包问题)
 	* [数据结构](#数据结构)
@@ -19,6 +23,209 @@
 # 常用算法模板
 
 -----
+
+## 图论
+
+### 二分图
+染色法判断一个图是否是二分图：将一个顶点标记为一种颜色，与其相邻的顶点标记为不同的颜色，如果发现相邻的顶点颜色与自身的颜色相同，则不能构成一个二分图。时间复杂度O(V + E)。
+```cpp
+vector<int> G[MAX_N]; // 邻接表
+int color[MAX_V];     
+int V; // 顶点数
+
+// 深度优先搜索，将顶点v染成颜色c
+bool dfs(int v, int c) {
+    color[v] = c;
+    for (int i = 0; i < G[v].size(); ++i) {
+        // 发现邻居颜色与自己相同，不能构成二分图
+        if (color[G[v][i]] == c) return false;
+        // 将邻居染成与自己不同的颜色，如果失败，也不能构成二分图
+        if (color[G[v][i]] == 0 && !dfs(G[v][i], -c)) return false;
+    }
+    return true;
+}
+
+void solve() {
+    // 如果图不连通，需要一个循环
+    for (int i = 0; i < V; ++i) {
+        if (color[i] == 0) {
+            if (!dfs(i, 1)) {
+                cout << "NO\n";
+                return;
+            }
+        }
+    }
+    cout << "YES\n";
+}
+```
+
+### 最短路径
+
+**单源最短路径算法Dijkstra**
+将所有的点分成两个集合，一个集合S是最短路径已经确定的点，另一个集合V是最短路径还没有确定的点。最初集合S中只有起点，然后从集合V中选取距离起点最小的点，加入S，然后更新集合V中各个点与起点的距离，直到所有的点都加入到集合S中。复杂度为O(V^2)。不能处理负边。
+```cpp
+int g[MAX_V][MAX_V]; // 邻接矩阵
+int d[MAX_V]; // 各个顶点到起点的距离
+bool used[MAX_V]; // 用于记录顶点的最短路径是否确定
+int V;
+
+void dijkstra(int s) {
+    fill(d, d + V, 0x3f3f3f3f);
+    fill(used, used + V, false);
+    d[s] = 0;
+
+    while (true) {
+        int v = -1;
+        for (int i = 0; i < V; ++i)
+            if (!used[i] && (v == -1 || d[v] > d[i])) v = i;
+
+        if (v == -1) break;
+        used[v] = true;
+        for (int i = 0; i < v; ++i)
+            d[i] = min(d[i], d[v] + g[v][i]);
+    }
+}
+```
+
+原始的dijkstra算法，最耗时的地方在于每一轮都要遍历寻找下一个距离起点最近的顶点，因此可以用最小堆来优化。利用堆优化的dijkstra算法，时间复杂度为O(ElogV)。
+```cpp
+typedef struct edge {
+    int to, cost;
+} edge;
+
+typedef pair<int, int> P;
+
+int V;
+vector<edge> G[MAX_V];
+int d[MAX_V];
+
+void dijkstra(int s) {
+    priority_queue<P, vector<P>, greater<P>> que;
+    fill(d, d + V, 0x3f3f3f3f);
+    
+    d[s] = 0;
+    que.push(P(0, s));
+
+    while (!que.empty()) {
+        P p = que.top(); que.pop();
+        int v = p.second;
+        if (d[v] < p.first) continue;
+        for (int i = 0; i < G[v].size(); ++i) {
+            edge e = G[v][i];
+            if (d[e.to] > d[v] + e.cost) {
+                d[e.to] = d[v] + e.cost;
+                que.push(P(d[e.to], e.to));
+            }
+        }
+    }
+}
+```
+
+
+**单源最短路径算法Bellman-Ford**
+通过松弛法来更新，时间复杂度O(VE)。可以处理负边。
+```cpp
+typedef struct edge {
+    int u, v, w;
+} edge;
+
+const int inf = 0x3f3f3f3f;
+
+edge es[MAX_E];
+int d[MAX_V];
+int V, E;
+
+void bellman_ford(int s) {
+    for (int i = 0; i < V; ++i) d[i] = inf;
+    d[s] = 0;
+
+    while (true) { // 如果图中没有负环，则循环最多执行V-1次
+        bool update = false;
+        for (int i = 0; i < E; ++i) {
+            if (d[e[i].u] != inf && d[e[i].v] > d[e[i].u] + e[i].w) {
+                d[e[i].v] = d[e[i].u] + e[i].w;
+                update = true;
+            }
+        }
+        if (!update) break;
+    }
+}
+```
+
+**求所有点对之间的最短路径算法Floyd-Warshall**
+```cpp
+int d[MAX_V][MAX_V];
+int V;
+
+for (int k = 0; k < V; ++k)
+    for (int i = 0; i < V; ++i)
+        for (int j = 0; j < V; ++j)
+            d[i][j] = min(d[i][j], d[i][k] + d[k][j]);
+```
+
+### 最小生成树
+
+**prim算法**
+假设有一棵只包含一个顶点v的树T，然后贪心地选取T和其他顶点之间相连的最小权值的边，并把它加到T中。时间复杂度也是O(V^2)，如果用堆优化，时间复杂度是O(ElogV)。
+
+```cpp
+int g[MAX_V][MAX_V];
+int d[MAX_V]; // 从当前生成树包含的点出发的边到其余顶点的最小值
+bool used[MAX_V];
+int v;
+
+int prim() {
+    for (int i = 0; i < V; ++i) {
+        d[i] = 0x3f3f3f3f;
+        used[i] = false;
+    }
+    d[i] = 0;
+    int res = 0;
+
+    while (true) {
+        int v = -1;
+        for (int i = 0; i < V; ++i) {
+            if (!used[i] && (v == -1 || d[v] > d[i])) v = i;
+        }
+
+        if (v == -1) break;
+        used[v] = true;
+        res += d[v];
+        for (int i = 0; i < V; ++i)
+            d[i] = min(d[i], g[v][i]);
+    }
+    return res;
+}
+```
+
+**kruskal算法**
+将边按权值从小到大排序，然后遍历边，如果不产生圈，就将这条边加入到最小生成树中。利用并查集高效判断是否会产生圈。时间复杂度O(ElogV)。
+```cpp
+typedef edge {
+    int u, v, w;
+    bool operator < (const edge& rhs) const {
+        return w < rhs.w;
+    }
+} edge;
+
+edge es[MAX_E];
+int V, E;
+
+int kruskal() {
+    sort(es, es + E);
+    init(V); // 并查集初始化
+    int res = 0;
+    for (int i = 0; i < E; ++i) {
+        edge e = es[i];
+        if (!same(e.u, e.v)) {
+            res += e.w;
+            unite(e.u, e.v);
+        }
+    }
+    return res;
+}
+```
+
 
 ## 动态规划
 
