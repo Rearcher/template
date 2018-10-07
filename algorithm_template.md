@@ -4,6 +4,10 @@
 <!-- code_chunk_output -->
 
 * [常用算法模板](#常用算法模板)
+	* [数论](#数论)
+		* [快速乘法与快速幂](#快速乘法与快速幂)
+		* [Miller-Rabin大素数判定算法](#miller-rabin大素数判定算法)
+		* [Pollard-Rho大整数因子分解算法](#pollard-rho大整数因子分解算法)
 	* [图论](#图论)
 		* [二分图](#二分图)
 		* [最短路径](#最短路径)
@@ -23,6 +27,123 @@
 # 常用算法模板
 
 -----
+
+## 数论
+
+### 快速乘法与快速幂
+```cpp
+typedef long long ll;
+// (a * b) % m
+ll quick_mul(ll a, ll b, ll m) {
+    ll res = 0;
+    while (b) {
+        if (b & 1) res = (res + a) % m;
+        a = (a + a) % m;
+        b >>= 1;
+    }
+    return res;
+}
+
+// (a ^ b) % m
+ll quick_pow(ll a, ll b, ll m) {
+    ll res = 1;
+    while (b) {
+        if (b & 1) res = quick_mul(res, a, m);
+        a = quick_mul(a, a, m);
+        b >>= 1;
+    }
+    return res;
+}
+
+// a ^ b
+ll quick_pow(ll a, ll b) {
+    ll res = 1;
+    while (b) {
+        if (b & 1) res = res * a;
+        a = a * a;
+        b >>= 1;
+    }
+    return res;
+}
+```
+
+### Miller-Rabin大素数判定算法
+```cpp
+bool check(ll a, ll x, ll n, ll r) {
+    ll res = quick_pow(a, x, n);
+    ll last = res;
+    for (int i = 0; i < r; ++i) {
+        res = quick_mul(res, res, n);
+        if (res == 1 && last != 1 && last != n - 1) return true;
+        last = res;
+    }
+    if (res != 1) return true;
+    return false;
+}
+
+bool miller_rabin(ll n, int times=20) {
+    if (n < 2) return false;
+    if (n == 2) return true;
+    if ((n & 1) == 0) return false;
+
+    ll x = n - 1, r = 0;
+    while ((x & 1) == 0) {
+        x >>= 1;
+        r++;
+    }
+
+    for (int i = 0; i < times; ++i) {
+        ll a = rand() % (n - 1) + 1;
+        if (check(a, x, n, r)) return false;
+    }
+    return true;
+}
+```
+
+### Pollard-Rho大整数因子分解算法
+```cpp
+ll factor[100]; // 保存所有质因子
+map<ll, ll> mp; // 保存所有质因子对应的数目
+int tot;  // 质因子的个数
+
+ll gcd(ll a, ll b) {
+    if (a < 0) return gcd(-a, b);
+    if (b == 0) return a;
+    return gcd(b, a % b);
+}
+
+ll pollard_rho(ll x, ll c) {
+    ll i = 1, k = 2;
+    ll x0 = rand() % x;
+    ll y = x0;
+
+    while (true) {
+        i++;
+        x0 = (quick_mul(x0, x0, x) + c) % x;
+        ll d = gcd(y - x0, x);
+        if (d != 1 && d != x) return d;
+        if (y == x0) return x;
+        if (i == k) {
+            y = x0;
+            k += k;
+        }
+    }
+}
+
+void factorize(ll n) {
+    if (miller_rabin(n)) {
+        factor[tot++] = n;
+        mp[n]++;
+        return;
+    }
+
+    ll p = n;
+    while (p >= n)
+        p = pollard_rho(p, rand() % (n - 1) + 1);
+    factorize(p);
+    factorize(n / p);
+}
+```
 
 ## 图论
 
