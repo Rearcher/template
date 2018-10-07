@@ -81,6 +81,7 @@ bool check(ll a, ll x, ll n, ll r) {
     return false;
 }
 
+// 返回true代表是素数
 bool miller_rabin(ll n, int times=20) {
     if (n < 2) return false;
     if (n == 2) return true;
@@ -138,8 +139,9 @@ void factorize(ll n) {
     }
 
     ll p = n;
-    while (p >= n)
+    while (p >= n) {
         p = pollard_rho(p, rand() % (n - 1) + 1);
+    }
     factorize(p);
     factorize(n / p);
 }
