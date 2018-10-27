@@ -190,6 +190,8 @@ void solve() {
 
 **单源最短路径算法Dijkstra**  
 
+**注意**：下面的模板代码，数组都是从下标0开始的
+
 将所有的点分成两个集合，一个集合S是最短路径已经确定的点，另一个集合V是最短路径还没有确定的点。最初集合S中只有起点，然后从集合V中选取距离起点最小的点，加入S，然后更新集合V中各个点与起点的距离，直到所有的点都加入到集合S中。复杂度为O(V^2)。不能处理负边。
 ```cpp
 int g[MAX_V][MAX_V]; // 邻接矩阵
@@ -219,6 +221,8 @@ void dijkstra(int s) {
 ```cpp
 typedef struct edge {
     int to, cost;
+    edge() {}
+    edge(int _to, int _cost) : to(_to), cost(_cost) {}
 } edge;
 
 typedef pair<int, int> P;
