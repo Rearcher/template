@@ -80,7 +80,7 @@ class KNN:
         if len(self.neighbors) > self.k:
             heapq.heappop(self.neighbors)
 
-        split_dist = abs(x[split_axis - 1] - root['data'][split_axis])
+        split_dist = abs(x[split_axis] - root['data'][split_axis])
         neighbor_max = -1 * heapq.nsmallest(1, self.neighbors)[0][0]
         if split_dist > neighbor_max:
             return
