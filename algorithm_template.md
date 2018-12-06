@@ -6,6 +6,7 @@
 * [常用算法模板](#常用算法模板)
 	* [数论](#数论)
 		* [快速乘法与快速幂](#快速乘法与快速幂)
+		* [矩阵快速幂](#矩阵快速幂)
 		* [Miller-Rabin大素数判定算法](#miller-rabin大素数判定算法)
 		* [Pollard-Rho大整数因子分解算法](#pollard-rho大整数因子分解算法)
 		* [无限循环小数转分数](#无限循环小数转分数)
@@ -65,6 +66,48 @@ ll quick_pow(ll a, ll b) {
         b >>= 1;
     }
     return res;
+}
+```
+
+### 矩阵快速幂
+```cpp
+typedef long long ll;
+
+struct Mat {
+    ll mat[maxn][maxn];
+    ll row, col;
+};
+
+Mat mul(Mat &a, Mat &b) {
+    Mat ans;
+    ans.row = a.row;
+    ans.col = b.col;
+    memset(ans.mat, 0, sizeof(ans.mat));
+
+    for (ll i = 0; i < ans.row; i++)       
+        for (ll k = 0; k < a.col; k++)
+            if (a.mat[i][k])
+                for (ll j = 0; j < ans.col; j++)
+                    ans.mat[i][j] += a.mat[i][k] * b.mat[k][j];
+    
+    return ans;
+}
+
+Mat pow(Mat a, ll k) {
+    Mat ans;
+    ans.row = a.row;
+    ans.col = a.col;
+
+    for (ll i = 0; i < a.row; i++)
+        for (ll j = 0; j < a.col; j++)
+            ans.mat[i][j] = (i == j);
+            
+    while (k) {
+        if (k & 1) ans = mul(ans, a);
+        a = mul(a, a);
+        k >>= 1;
+    }
+    return ans;
 }
 ```
 
@@ -190,6 +233,8 @@ void solve() {
 
 **单源最短路径算法Dijkstra**  
 
+**注意**：下面的模板代码，数组都是从下标0开始的
+
 将所有的点分成两个集合，一个集合S是最短路径已经确定的点，另一个集合V是最短路径还没有确定的点。最初集合S中只有起点，然后从集合V中选取距离起点最小的点，加入S，然后更新集合V中各个点与起点的距离，直到所有的点都加入到集合S中。复杂度为O(V^2)。不能处理负边。
 ```cpp
 int g[MAX_V][MAX_V]; // 邻接矩阵
@@ -219,6 +264,8 @@ void dijkstra(int s) {
 ```cpp
 typedef struct edge {
     int to, cost;
+    edge() {}
+    edge(int _to, int _cost) : to(_to), cost(_cost) {}
 } edge;
 
 typedef pair<int, int> P;
