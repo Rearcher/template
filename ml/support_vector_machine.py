@@ -142,11 +142,11 @@ def main():
 
     y_pred = model.predict(X_train)
     a, p, r = accuracy_score(y_train, y_pred), precision_score(y_train, y_pred), recall_score(y_train, y_pred)
-    print(f'training: accuracy {a}, precision {p}, recall {r}')
+    print(f'train: accuracy {a}, precision {p}, recall {r}')
 
     y_pred = model.predict(X_test)
     a, p, r = accuracy_score(y_test, y_pred), precision_score(y_test, y_pred), recall_score(y_test, y_pred)
-    print(f'training: accuracy {a}, precision {p}, recall {r}')
+    print(f'test: accuracy {a}, precision {p}, recall {r}')
 
 
 if __name__ == '__main__':
