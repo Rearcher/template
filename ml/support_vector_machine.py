@@ -51,11 +51,13 @@ class SVM:
             self.alpha[j, 0] = L
         else:
             self.alpha[j, 0] = alpha_j_new
+        self.E[j, 0] = self._cal_E_i(j)[0]        
         if abs(self.alpha[j, 0] - alpha_j_old) < 1e-5:
             # print('j not moving enough')
             return 0
 
         self.alpha[i, 0] = alpha_i_old + self.y[i, 0] * self.y[j, 0] * (alpha_j_old - self.alpha[j, 0])
+        self.E[i, 0] = self._cal_E_i(i)[0]
         b1 = self.b - self.E[i, 0] - self.y[i, 0] * self.K[i, i] * (self.alpha[i, 0] - alpha_i_old) \
                 - self.y[j, 0] * self.K[j, i] * (self.alpha[j, 0] - alpha_j_old)
         b2 = self.b - self.E[j, 0] - self.y[i, 0] * self.K[i, j] * (self.alpha[i, 0] - alpha_i_old) \
@@ -67,8 +69,6 @@ class SVM:
         else:
             self.b = (b1 + b2) / 2
 
-        self.E[i, 0] = self._cal_E_i(i)[0]
-        self.E[j, 0] = self._cal_E_i(j)[0]
         return 1
                 
     def fit(self, X, y, C=1.0, gamma='auto', kernel='rbf', max_iteration=1000, tol=1e-3):
@@ -81,7 +81,7 @@ class SVM:
                 self.K[i, j] = self.K[j, i] = self._rbf_kernel(X[i], X[j], self.gamma)
         self.X, self.y = X, y
         self.C, self.tol = C, tol
-        self.alpha, self.b = np.random.random((n, 1)), 0
+        self.alpha, self.b = np.random.random((n, 1)) * self.C, 0
         self.E = (np.dot((self.alpha * y).T, self.K) + self.b).reshape(-1, 1) - y
         
         for iteration in range(max_iteration):
