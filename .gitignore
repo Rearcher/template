@@ -1,3 +1,5 @@
 a.out*
 .vscode
 ml/__pycache__
+.ipynb_checkpoints
+*.ipynb
