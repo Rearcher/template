@@ -74,7 +74,10 @@ class SVM:
                 
     def fit(self, X, y, C=1.0, gamma='auto', kernel='rbf', n_iteration=1000, tol=1e-3):
         n, m = X.shape
-        self.gamma = 1 / m
+        if gamma == 'auto':
+            self.gamma = 1 / m
+        else:
+            self.gamma = gamma
 
         self.K = np.zeros((n, n))
         for i in range(n):
@@ -139,7 +142,7 @@ def main():
     X_test, y_test = load_data('digits/testDigits')
 
     model = SVM()
-    model.fit(X_train, y_train, n_iteration=20, C=0.1)
+    model.fit(X_train, y_train, C=0.1)
 
     y_pred = model.predict(X_train)
     a, p, r = accuracy_score(y_train, y_pred), precision_score(y_train, y_pred), recall_score(y_train, y_pred)
