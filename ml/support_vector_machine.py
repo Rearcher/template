@@ -9,16 +9,19 @@ class SVM:
         pass
 
     def _rbf_kernel(self, x1, x2, gamma):
+        """径向基核函数"""
         distance = np.linalg.norm(x1 - x2) ** 2
         return np.exp(-gamma * distance)
 
     def _cal_E_i(self, i):
+        """计算Ei，注意只用到支持向量"""
         alpha = self.alpha[self.alpha > 0].reshape(-1, 1)
         y = self.y[self.alpha > 0].reshape(-1, 1)
         Ki = self.K[i].reshape(-1, 1)[self.alpha > 0].reshape(-1, 1)
         return np.dot((alpha * y).T, Ki) + self.b
 
     def _select_j(self, i):
+        """SMO算法的第二层循环，根据选择的第一个点来选择第二个点"""
         max_delta_E, j = 0, -1
         n, _ = self.X.shape
         for k in range(n):
@@ -31,6 +34,7 @@ class SVM:
         return j
 
     def _update(self, i, j):
+        """两个变量的二次规划算法"""
         alpha_i_old, alpha_j_old = self.alpha[i, 0], self.alpha[j, 0]
         if self.y[i, 0] != self.y[j, 0]:
             L = max(0, self.alpha[j, 0] - self.alpha[i, 0])
@@ -73,6 +77,17 @@ class SVM:
         return 1
                 
     def fit(self, X, y, C=1.0, gamma='auto', kernel='rbf', n_iteration=1000, tol=1e-3):
+        """
+        对数据进行拟合
+
+        Args:
+            X: 特征矩阵
+            y: 标签矩阵
+            C: 对误差的惩罚项
+            gamma: rbf核函数的参数
+            n_iteration: 迭代次数
+            tol: 停止训练的误差精度
+        """
         n, m = X.shape
         if gamma == 'auto':
             self.gamma = 1 / m
@@ -101,6 +116,7 @@ class SVM:
                 break
 
     def predict(self, X):
+        """预测"""
         n, _ = self.X.shape
         m, _ = X.shape
 
@@ -142,7 +158,7 @@ def main():
     X_test, y_test = load_data('digits/testDigits')
 
     model = SVM()
-    model.fit(X_train, y_train, C=0.1)
+    model.fit(X_train, y_train)
 
     y_pred = model.predict(X_train)
     a, p, r = accuracy_score(y_train, y_pred), precision_score(y_train, y_pred), recall_score(y_train, y_pred)
