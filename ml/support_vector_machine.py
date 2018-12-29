@@ -13,7 +13,10 @@ class SVM:
         return np.exp(-gamma * distance)
 
     def _cal_E_i(self, i):
-        return np.dot((self.alpha * self.y).T, self.K[i].reshape(-1, 1)) + self.b
+        alpha = self.alpha[self.alpha > 0].reshape(-1, 1)
+        y = self.y[self.alpha > 0].reshape(-1, 1)
+        Ki = self.K[i].reshape(-1, 1)[self.alpha > 0].reshape(-1, 1)
+        return np.dot((alpha * y).T, Ki) + self.b
 
     def _select_j(self, i):
         max_delta_E, j = 0, -1
@@ -36,12 +39,10 @@ class SVM:
             L = max(0, self.alpha[i, 0] + self.alpha[j, 0] - self.C)
             H = min(self.C, self.alpha[i, 0] + self.alpha[j, 0])
         if L == H:
-            # print('L == H')
             return 0
 
         eta = self.K[i, i] + self.K[j, j] - 2 * self.K[i, j]
         if eta < 0:
-            # print('eta < 0')
             return 0
 
         alpha_j_new = alpha_j_old + self.y[j, 0] * (self.E[i, 0] - self.E[j, 0]) / eta
@@ -51,13 +52,10 @@ class SVM:
             self.alpha[j, 0] = L
         else:
             self.alpha[j, 0] = alpha_j_new
-        self.E[j, 0] = self._cal_E_i(j)[0]        
         if abs(self.alpha[j, 0] - alpha_j_old) < 1e-5:
-            # print('j not moving enough')
             return 0
 
         self.alpha[i, 0] = alpha_i_old + self.y[i, 0] * self.y[j, 0] * (alpha_j_old - self.alpha[j, 0])
-        self.E[i, 0] = self._cal_E_i(i)[0]
         b1 = self.b - self.E[i, 0] - self.y[i, 0] * self.K[i, i] * (self.alpha[i, 0] - alpha_i_old) \
                 - self.y[j, 0] * self.K[j, i] * (self.alpha[j, 0] - alpha_j_old)
         b2 = self.b - self.E[j, 0] - self.y[i, 0] * self.K[i, j] * (self.alpha[i, 0] - alpha_i_old) \
@@ -68,10 +66,13 @@ class SVM:
             self.b = b2
         else:
             self.b = (b1 + b2) / 2
-
+        
+        self.E[i, 0] = self._cal_E_i(i)[0]
+        self.E[j, 0] = self._cal_E_i(j)[0]        
+        
         return 1
                 
-    def fit(self, X, y, C=1.0, gamma='auto', kernel='rbf', max_iteration=1000, tol=1e-3):
+    def fit(self, X, y, C=1.0, gamma='auto', kernel='rbf', n_iteration=1000, tol=1e-3):
         n, m = X.shape
         self.gamma = 1 / m
 
@@ -81,13 +82,13 @@ class SVM:
                 self.K[i, j] = self.K[j, i] = self._rbf_kernel(X[i], X[j], self.gamma)
         self.X, self.y = X, y
         self.C, self.tol = C, tol
-        self.alpha, self.b = np.random.random((n, 1)) * self.C, 0
+        self.alpha, self.b = np.zeros((n, 1)), 0
         self.E = (np.dot((self.alpha * y).T, self.K) + self.b).reshape(-1, 1) - y
         
-        for iteration in range(max_iteration):
+        for iteration in range(n_iteration):
             pairs_changed = 0
             for i in range(n):
-                Ei = self._cal_E_i(i)[0]
+                Ei = self.E[i, 0]
                 if ((y[i, 0] * Ei < -tol) and (self.alpha[i, 0] < C)) or ((y[i, 0] * Ei > tol) and (self.alpha[i, 0] > 0)):
                     j = self._select_j(i)
                     if j != -1:
@@ -138,15 +139,15 @@ def main():
     X_test, y_test = load_data('digits/testDigits')
 
     model = SVM()
-    model.fit(X_train, y_train)
+    model.fit(X_train, y_train, n_iteration=20, C=0.1)
 
     y_pred = model.predict(X_train)
     a, p, r = accuracy_score(y_train, y_pred), precision_score(y_train, y_pred), recall_score(y_train, y_pred)
-    print(f'train: accuracy {a}, precision {p}, recall {r}')
+    print(f'train: accuracy {a:.2f}, precision {p:.2f}, recall {r:.2f}')
 
     y_pred = model.predict(X_test)
     a, p, r = accuracy_score(y_test, y_pred), precision_score(y_test, y_pred), recall_score(y_test, y_pred)
-    print(f'test: accuracy {a}, precision {p}, recall {r}')
+    print(f'test: accuracy {a:.2f}, precision {p:.2f}, recall {r:.2f}')
 
 
 if __name__ == '__main__':
