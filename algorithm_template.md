@@ -380,7 +380,7 @@ int prim() {
 
 将边按权值从小到大排序，然后遍历边，如果不产生圈，就将这条边加入到最小生成树中。利用并查集高效判断是否会产生圈。时间复杂度O(ElogV)。
 ```cpp
-typedef edge {
+typedef struct edge {
     int u, v, w;
     bool operator < (const edge& rhs) const {
         return w < rhs.w;
@@ -396,7 +396,7 @@ int kruskal() {
     int res = 0;
     for (int i = 0; i < E; ++i) {
         edge e = es[i];
-        if (!same(e.u, e.v)) {
+        if (!same(e.u, e.v)) { // 并查集判断是否属于同一集合
             res += e.w;
             unite(e.u, e.v);
         }
