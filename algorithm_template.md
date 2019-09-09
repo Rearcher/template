@@ -1,30 +1,24 @@
-
-<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
-
-<!-- code_chunk_output -->
-
-* [常用算法模板](#常用算法模板)
-	* [数论](#数论)
-		* [快速乘法与快速幂](#快速乘法与快速幂)
-		* [矩阵快速幂](#矩阵快速幂)
-		* [Miller-Rabin大素数判定算法](#miller-rabin大素数判定算法)
-		* [Pollard-Rho大整数因子分解算法](#pollard-rho大整数因子分解算法)
-		* [无限循环小数转分数](#无限循环小数转分数)
-	* [图论](#图论)
-		* [二分图](#二分图)
-		* [最短路径](#最短路径)
-		* [最小生成树](#最小生成树)
-	* [动态规划](#动态规划)
-		* [背包问题](#背包问题)
-	* [数据结构](#数据结构)
-		* [并查集](#并查集)
-		* [堆](#堆)
-		* [二叉树的遍历（非递归）](#二叉树的遍历非递归)
-		* [树状数组](#树状数组)
-		* [线段树](#线段树)
-
-<!-- /code_chunk_output -->
-
+- [常用算法模板](#%e5%b8%b8%e7%94%a8%e7%ae%97%e6%b3%95%e6%a8%a1%e6%9d%bf)
+  - [数论](#%e6%95%b0%e8%ae%ba)
+    - [快速乘法与快速幂](#%e5%bf%ab%e9%80%9f%e4%b9%98%e6%b3%95%e4%b8%8e%e5%bf%ab%e9%80%9f%e5%b9%82)
+    - [矩阵快速幂](#%e7%9f%a9%e9%98%b5%e5%bf%ab%e9%80%9f%e5%b9%82)
+    - [Miller-Rabin大素数判定算法](#miller-rabin%e5%a4%a7%e7%b4%a0%e6%95%b0%e5%88%a4%e5%ae%9a%e7%ae%97%e6%b3%95)
+    - [Pollard-Rho大整数因子分解算法](#pollard-rho%e5%a4%a7%e6%95%b4%e6%95%b0%e5%9b%a0%e5%ad%90%e5%88%86%e8%a7%a3%e7%ae%97%e6%b3%95)
+    - [无限循环小数转分数](#%e6%97%a0%e9%99%90%e5%be%aa%e7%8e%af%e5%b0%8f%e6%95%b0%e8%bd%ac%e5%88%86%e6%95%b0)
+  - [字符串](#%e5%ad%97%e7%ac%a6%e4%b8%b2)
+    - [后缀数组](#%e5%90%8e%e7%bc%80%e6%95%b0%e7%bb%84)
+  - [图论](#%e5%9b%be%e8%ae%ba)
+    - [二分图](#%e4%ba%8c%e5%88%86%e5%9b%be)
+    - [最短路径](#%e6%9c%80%e7%9f%ad%e8%b7%af%e5%be%84)
+    - [最小生成树](#%e6%9c%80%e5%b0%8f%e7%94%9f%e6%88%90%e6%a0%91)
+  - [动态规划](#%e5%8a%a8%e6%80%81%e8%a7%84%e5%88%92)
+    - [背包问题](#%e8%83%8c%e5%8c%85%e9%97%ae%e9%a2%98)
+  - [数据结构](#%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84)
+    - [并查集](#%e5%b9%b6%e6%9f%a5%e9%9b%86)
+    - [堆](#%e5%a0%86)
+    - [二叉树的遍历（非递归）](#%e4%ba%8c%e5%8f%89%e6%a0%91%e7%9a%84%e9%81%8d%e5%8e%86%e9%9d%9e%e9%80%92%e5%bd%92)
+    - [树状数组](#%e6%a0%91%e7%8a%b6%e6%95%b0%e7%bb%84)
+    - [线段树](#%e7%ba%bf%e6%ae%b5%e6%a0%91)
 
 # 常用算法模板
 
@@ -193,6 +187,44 @@ void factorize(ll n) {
 
 ### 无限循环小数转分数
 假设有无限循环小数0.abcdefg，其中，defg是循环体。令非循环体的长度为L1，循环体的长度为L2，总长度L=L1+L2，那么原始的分数为(abcdefg - abc)/(pow(10, L) - pow(10, L1))
+
+## 字符串
+
+### 后缀数组
+```cpp
+const int MAX_N = 20005;
+int n, k;
+int rk[MAX_N + 1], sa[MAX_N + 1], tmp[MAX_N + 1];
+
+bool compare_sa(int i, int j) {
+    if (rk[i] != rk[j]) return rk[i] < rk[j];
+    else {
+        int ri = i + k <= n ? rk[i + k] : -1;
+        int rj = j + k <= n ? rk[j + k] : -1;
+        return ri < rj;
+    }
+}
+
+void build_sa(string s) {
+    n = s.length();
+    for (int i = 0; i <= n; ++i) {
+        sa[i] = i;
+        rk[i] = i < n ? s[i] : -1;
+    }
+
+    for (k = 1; k <= n; k *= 2) {
+        sort(sa, sa + n + 1, compare_sa);
+
+        tmp[sa[0]] = 0;
+        for (int i = 1; i <= n; ++i) {
+            tmp[sa[i]] = tmp[sa[i - 1]] + (compare_sa(sa[i - 1], sa[i]) ? 1 : 0);
+        }
+        for (int i = 0; i <= n; ++i) {
+            rk[i] = tmp[i];
+        }
+    }
+}
+```
 
 ## 图论
 
